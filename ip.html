@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toolkit - What Is My IP</title>
+  </head>
+  <body>
+    <div>
+      <h1>What is My IP Address?</h1>
+      <p>IP Address: <span id="ipAddress">Loading...</span></p>
+      <p>Country: <span id="country">Loading...</span></p>
+      <p>City: <span id="city">Loading...</span></p>
+      <button id="refreshButton">Refresh</button>
+
+      <br />
+      <br />
+
+      <textarea id="apiResponse" readonly></textarea>
+    </div>
+
+    <script>
+      const ipAddressElement = document.getElementById("ipAddress");
+      const countryElement = document.getElementById("country");
+      const cityElement = document.getElementById("city");
+      const refreshButton = document.getElementById("refreshButton");
+      const apiResponseElement = document.getElementById("apiResponse");
+
+      // Function to fetch IP address, country, and city
+      async function fetchIPDetails() {
+        try {
+          const response = await fetch("http://ip-api.com/json/");
+          const data = await response.json();
+          ipAddressElement.textContent = data.query;
+          countryElement.textContent = data.country;
+          cityElement.textContent = data.city;
+          apiResponseElement.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          console.error("Error:", error);
+          ipAddressElement.textContent = "Error";
+          countryElement.textContent = "Error";
+          cityElement.textContent = "Error";
+          apiResponseElement.textContent = error.message;
+        }
+      }
+
+      // Refresh IP details when the refresh button is clicked
+      refreshButton.addEventListener("click", () => {
+        ipAddressElement.textContent = "Loading...";
+        countryElement.textContent = "Loading...";
+        cityElement.textContent = "Loading...";
+        fetchIPDetails(); // Fetch new IP details
+      });
+
+      // Fetch IP details when the page loads
+      fetchIPDetails();
+    </script>
+  </body>
+</html>

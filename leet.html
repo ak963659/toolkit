@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toolkit - Leet (1337)</title>
+  </head>
+  <body>
+    <div>
+      <h1>Leet (1337)</h1>
+      <p id="toastMessage"></p>
+      <select id="flavorDropDown">
+        <option value="Classic" selected>Classic</option>
+        <option value="Classic (Random)">Classic (Random)</option>
+      </select>
+
+      <br />
+      <br />
+
+      <textarea id="input" placeholder="Input here..."></textarea>
+
+      <br />
+
+      <textarea id="output" placeholder="Output here..." readonly></textarea>
+
+      <br />
+      <br />
+
+      <button id="copyButton">Copy</button>
+    </div>
+
+    <script>
+      // todo: replace algorithm:flavorDropDown & leet:leet
+      const toastMessage = document.getElementById("toastMessage");
+      const flavorDropDown = document.getElementById("flavorDropDown");
+      const inputBox = document.getElementById("input");
+      const outputBox = document.getElementById("output");
+      const copyButton = document.getElementById("copyButton");
+
+      // Leet mapping (lowercase only)
+      const leetMap = {
+        a: "4",
+        e: "3",
+        g: "6",
+        i: "1",
+        o: "0",
+        s: "5",
+        t: "7",
+      };
+
+      function showToast(message, duration = 1000) {
+        toastMessage.textContent = message;
+
+        setTimeout(() => {
+          toastMessage.textContent = "";
+        }, duration);
+      }
+
+      // Function to generate leet based on the selected algorithm
+      async function generateLeet(input, flavor) {
+        const inputLower = input.toLowerCase();
+        let result = "";
+        for (let i = 0; i < inputLower.length; i++) {
+          const char = inputLower[i];
+          if (flavor === "Classic") {
+            result += leetMap[char] || char;
+          } else if (flavor === "Classic (Random)") {
+            if (leetMap[char] && Math.random() > 0.5) {
+              result += leetMap[char];
+            } else {
+              result += char;
+            }
+          }
+        }
+        return result;
+      }
+
+      // Function to update the leet in real-time
+      async function updateLeet() {
+        const inputText = inputBox.value;
+        const flavor = flavorDropDown.value;
+        const leet = await generateLeet(inputText, flavor);
+        outputBox.value = leet;
+      }
+
+      // Update the leet when the input changes
+      inputBox.addEventListener("input", updateLeet);
+
+      // Update the leet when the algorithm changes
+      flavorDropDown.addEventListener("change", updateLeet);
+
+      // Copy the leet to the clipboard
+      copyButton.addEventListener("click", () => {
+        outputBox.select(); // Select the text in the output box
+        document.execCommand("copy"); // Copy the selected text
+        showToast("leet copied to clipboard!");
+      });
+    </script>
+  </body>
+</html>

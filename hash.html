@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toolkit - Live Hash</title>
+  </head>
+  <body>
+    <div>
+      <h1>Live Hash</h1>
+      <p id="toastMessage"></p>
+      <select id="hashAlgorithm">
+        <option value="SHA-1">SHA-1</option>
+        <option value="SHA-256" selected>SHA-256</option>
+        <option value="SHA-384">SHA-384</option>
+        <option value="SHA-512">SHA-512</option>
+      </select>
+
+      <br />
+      <br />
+
+      <textarea id="input" placeholder="Input here..."></textarea>
+
+      <br />
+
+      <textarea id="output" placeholder="Output here..." readonly></textarea>
+
+      <br />
+      <br />
+
+      <button id="copyButton">Copy</button>
+    </div>
+
+    <script>
+      const toastMessage = document.getElementById("toastMessage");
+      const hashAlgorithmDropdown = document.getElementById("hashAlgorithm");
+      const inputBox = document.getElementById("input");
+      const outputBox = document.getElementById("output");
+      const copyButton = document.getElementById("copyButton");
+
+      function showToast(message, duration = 1000) {
+        toastMessage.textContent = message;
+
+        setTimeout(() => {
+          toastMessage.textContent = "";
+        }, duration);
+      }
+
+      // Function to generate hash based on the selected algorithm
+      async function generateHash(input, algorithm) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(input);
+        const hashBuffer = await crypto.subtle.digest(algorithm, data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray
+          .map((byte) => byte.toString(16).padStart(2, "0"))
+          .join("");
+        return hashHex;
+      }
+
+      // Function to update the hash in real-time
+      async function updateHash() {
+        const inputText = inputBox.value;
+        const algorithm = hashAlgorithmDropdown.value;
+        const hash = await generateHash(inputText, algorithm);
+        outputBox.value = hash;
+      }
+
+      // Update the hash when the input changes
+      inputBox.addEventListener("input", updateHash);
+
+      // Update the hash when the algorithm changes
+      hashAlgorithmDropdown.addEventListener("change", updateHash);
+
+      // Copy the hash to the clipboard
+      copyButton.addEventListener("click", () => {
+        outputBox.select(); // Select the text in the output box
+        document.execCommand("copy"); // Copy the selected text
+        showToast("Hash copied to clipboard!");
+      });
+    </script>
+  </body>
+</html>
