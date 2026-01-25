@@ -10,7 +10,7 @@
       <h1>What is My IP Address?</h1>
       <p>IP Address: <span id="ipAddress">Loading...</span></p>
       <p>Country: <span id="country">Loading...</span></p>
-      <p>City: <span id="city">Loading...</span></p>
+      <!-- <p>City: <span id="city">Loading...</span></p> -->
       <button id="refreshButton">Refresh</button>
 
       <br />
@@ -22,24 +22,24 @@
     <script>
       const ipAddressElement = document.getElementById("ipAddress");
       const countryElement = document.getElementById("country");
-      const cityElement = document.getElementById("city");
+      // const cityElement = document.getElementById("city");
       const refreshButton = document.getElementById("refreshButton");
       const apiResponseElement = document.getElementById("apiResponse");
 
       // Function to fetch IP address, country, and city
       async function fetchIPDetails() {
         try {
-          const response = await fetch("https://ip-api.com/json/");
+          const response = await fetch("https://ipapi.co/json/");
           const data = await response.json();
-          ipAddressElement.textContent = data.query;
-          countryElement.textContent = data.country;
-          cityElement.textContent = data.city;
+          ipAddressElement.textContent = data.ip;
+          countryElement.textContent = data.country_name;
+          // cityElement.textContent = data.city;
           apiResponseElement.textContent = JSON.stringify(data, null, 2);
         } catch (error) {
           console.error("Error:", error);
           ipAddressElement.textContent = "Error";
           countryElement.textContent = "Error";
-          cityElement.textContent = "Error";
+          // cityElement.textContent = "Error";
           apiResponseElement.textContent = error.message;
         }
       }
@@ -48,7 +48,7 @@
       refreshButton.addEventListener("click", () => {
         ipAddressElement.textContent = "Loading...";
         countryElement.textContent = "Loading...";
-        cityElement.textContent = "Loading...";
+        // cityElement.textContent = "Loading...";
         fetchIPDetails(); // Fetch new IP details
       });
 
