@@ -1,83 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Toolkit - Live Hash</title>
-  </head>
-  <body>
-    <div>
-      <h1>Live Hash</h1>
-      <p id="toastMessage"></p>
-      <select id="hashAlgorithm">
-        <option value="SHA-1">SHA-1</option>
-        <option value="SHA-256" selected>SHA-256</option>
-        <option value="SHA-384">SHA-384</option>
-        <option value="SHA-512">SHA-512</option>
-      </select>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Hash</title>
+</head>
+<body>
 
-      <br />
-      <br />
+<h1>Live Hash</h1>
+<p id="toastMessage"></p>
 
-      <textarea id="input" placeholder="Input here..."></textarea>
+<label>Algorithm:</label>
+<select id="hashAlgorithm">
+  <option value="SHA-1">SHA-1</option>
+  <option value="SHA-256" selected>SHA-256</option>
+  <option value="SHA-384">SHA-384</option>
+  <option value="SHA-512">SHA-512</option>
+</select>
 
-      <br />
+<br><br>
 
-      <textarea id="output" placeholder="Output here..." readonly></textarea>
+<label>Hash rounds:</label>
+<input id="hashRounds" type="number" min="1" max="1000000000" step="1" value="1">
 
-      <br />
-      <br />
+<br><br>
 
-      <button id="copyButton">Copy</button>
-    </div>
+<textarea id="input" placeholder="Input here..."></textarea>
 
-    <script>
-      const toastMessage = document.getElementById("toastMessage");
-      const hashAlgorithmDropdown = document.getElementById("hashAlgorithm");
-      const inputBox = document.getElementById("input");
-      const outputBox = document.getElementById("output");
-      const copyButton = document.getElementById("copyButton");
+<br><br>
 
-      function showToast(message, duration = 1000) {
-        toastMessage.textContent = message;
+<textarea id="output" placeholder="Output here..." readonly></textarea>
 
-        setTimeout(() => {
-          toastMessage.textContent = "";
-        }, duration);
-      }
+<br><br>
 
-      // Function to generate hash based on the selected algorithm
-      async function generateHash(input, algorithm) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(input);
-        const hashBuffer = await crypto.subtle.digest(algorithm, data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray
-          .map((byte) => byte.toString(16).padStart(2, "0"))
-          .join("");
-        return hashHex;
-      }
+<button id="copyButton">Copy</button>
 
-      // Function to update the hash in real-time
-      async function updateHash() {
-        const inputText = inputBox.value;
-        const algorithm = hashAlgorithmDropdown.value;
-        const hash = await generateHash(inputText, algorithm);
-        outputBox.value = hash;
-      }
+<script>
+const toastMessage = document.getElementById("toastMessage");
+const hashAlgorithmDropdown = document.getElementById("hashAlgorithm");
+const hashRoundsInput = document.getElementById("hashRounds");
+const inputBox = document.getElementById("input");
+const outputBox = document.getElementById("output");
+const copyButton = document.getElementById("copyButton");
 
-      // Update the hash when the input changes
-      inputBox.addEventListener("input", updateHash);
+function showToast(message, duration = 1000) {
+  toastMessage.textContent = message;
+  setTimeout(() => {
+    if (toastMessage.textContent === message) {
+      toastMessage.textContent = "";
+    }
+  }, duration);
+}
 
-      // Update the hash when the algorithm changes
-      hashAlgorithmDropdown.addEventListener("change", updateHash);
+async function generateHash(input, algorithm) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest(algorithm, data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(byte => byte.toString(16).padStart(2, "0")).join("");
+}
 
-      // Copy the hash to the clipboard
-      copyButton.addEventListener("click", () => {
-        outputBox.select(); // Select the text in the output box
-        document.execCommand("copy"); // Copy the selected text
-        showToast("Hash copied to clipboard!");
-      });
-    </script>
-  </body>
+async function generateHashWithRounds(input, algorithm, rounds) {
+  let result = input;
+  for (let i = 0; i < rounds; i++) {
+    result = await generateHash(result, algorithm);
+  }
+  return result;
+}
+
+async function updateHash() {
+  const inputText = inputBox.value;
+  const algorithm = hashAlgorithmDropdown.value;
+  const rounds = Number.parseInt(hashRoundsInput.value, 10);
+
+  if (!Number.isInteger(rounds) || rounds < 1 || rounds > 1000000000) {
+    outputBox.value = "";
+    showToast("Hash rounds must be between 1 and 1,000,000,000.", 1500);
+    return;
+  }
+
+  const hash = await generateHashWithRounds(inputText, algorithm, rounds);
+  outputBox.value = hash;
+}
+
+inputBox.addEventListener("input", updateHash);
+hashAlgorithmDropdown.addEventListener("change", updateHash);
+hashRoundsInput.addEventListener("input", updateHash);
+
+copyButton.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(outputBox.value);
+    showToast("Hash copied to clipboard!");
+  } catch (error) {
+    outputBox.select();
+    document.execCommand("copy");
+    showToast("Hash copied to clipboard!");
+  }
+});
+
+updateHash();
+</script>
+
+</body>
 </html>
